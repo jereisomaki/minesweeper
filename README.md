@@ -1,3 +1,3 @@
 ## Minesweeper
 
-[Demo](https://www.google.fi](https://minesweeper-tan-gamma.vercel.app/))
+[Demo](https://minesweeper-tan-gamma.vercel.app/)
