@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useGame } from "./context/GameContext";
 import { findFreeCell, markNeighbors } from "./utils";
 import { useBoard } from "./hooks/useBoard";
@@ -8,11 +7,7 @@ import Cell from "./components/Cell";
 const Game = () => {
   const game = useGame();
 
-  const { board, setBoard, resetBoard, revealedCells, columnCount, rowCount, bombCount } = useBoard(game.difficulty);
-
-  useEffect(() => {
-    resetBoard();
-  }, [game.difficulty]);
+  const { board, setBoard, revealedCells, columnCount, rowCount, bombCount } = useBoard(game.difficulty);
 
   const handleGameOver = () => {
     game.setIsGameLost(true);

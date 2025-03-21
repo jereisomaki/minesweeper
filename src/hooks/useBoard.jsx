@@ -44,7 +44,7 @@ export const useBoard = () => {
     setBoard(createBoard([], difficulty));
   };
 
-  useEffect(() => resetBoard(), [restart]);
+  useEffect(() => resetBoard(), [restart, difficulty]);
 
   return {
     board,
