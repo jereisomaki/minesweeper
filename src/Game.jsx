@@ -1,16 +1,48 @@
 import { useGame } from "./context/GameContext";
-import { findFreeCell, markNeighbors } from "./utils";
 import { useBoard } from "./hooks/useBoard";
+import { findFreeCell, markNeighbors } from "./utils";
 
-import Cell from "./components/Cell";
+import Board from "./components/Board";
 
 const Game = () => {
   const game = useGame();
 
   const { board, setBoard, revealedCells, columnCount, rowCount, bombCount } = useBoard(game.difficulty);
 
-  const handleGameOver = () => {
-    game.setIsGameLost(true);
+  const revealCell = (x, y) => {
+    setBoard((prevBoard) => {
+      let newBoard = prevBoard.map((row) => row.map((cell) => ({ ...cell })));
+
+      const cell = newBoard[y][x];
+      if (cell.isRevealed) return prevBoard;
+
+      if (cell.isMine) {
+        if (revealedCells === 0) {
+          const { x: x2, y: y2 } = findFreeCell(newBoard, rowCount, columnCount);
+          newBoard[y][x] = { ...newBoard[y][x], isMine: false, value: null };
+          newBoard[y2][x2] = { ...newBoard[y2][x2], isMine: true };
+        } else {
+          handleGameOver();
+          return prevBoard;
+        }
+      }
+
+      if (cell.value === null) newBoard = markNeighbors(newBoard, x, y);
+
+      newBoard[y][x] = { ...newBoard[y][x], isRevealed: true };
+      game.incrementClicks();
+
+      checkForWin(newBoard);
+      return newBoard;
+    });
+  };
+
+  const flagCell = (x, y, value) => {
+    setBoard((prevBoard) => {
+      const newBoard = prevBoard.map((row) => row.map((cell) => ({ ...cell })));
+      newBoard[y][x] = { ...newBoard[y][x], isFlagged: value };
+      return newBoard;
+    });
   };
 
   const checkForWin = (b) => {
@@ -18,58 +50,17 @@ const Game = () => {
     if (revealedNonBombCells === rowCount * columnCount - bombCount) game.setIsGameWon(true);
   };
 
-  const revealCell = (x, y) => {
-    let newBoard = board.map((row) => [...row]);
-
-    const cell = newBoard[y][x];
-    if (cell.isRevealed) return;
-
-    if (cell.isMine) {
-      if (revealedCells === 0) {
-        const { x: x2, y: y2 } = findFreeCell(newBoard, rowCount, columnCount);
-        newBoard[y][x].isMine = false;
-        newBoard[y][x].value = null;
-        newBoard[y2][x2].isMine = true;
-      } else {
-        handleGameOver();
-        return;
-      }
-    }
-
-    if (cell.value === null) newBoard = markNeighbors(newBoard, x, y);
-
-    newBoard[y][x].isRevealed = true;
-    game.incrementClicks();
-
-    setBoard(newBoard);
-    checkForWin(newBoard);
-  };
-
-  const flagCell = (x, y, value) => {
-    const newBoard = board.map((row) => [...row]);
-    newBoard[y][x].isFlagged = value;
-    setBoard(newBoard);
-  };
+  const handleGameOver = () => game.setIsGameLost(true);
 
   return (
     <div
-      className="grid justify-self-start gap-0 border-2 border-neutral-600"
       style={{
+        display: "grid",
         gridTemplateColumns: `repeat(${columnCount}, 1fr)`,
-        gridTemplateRows: `repeat(${rowCount}, 1fr)`, // Set the number of rows explicitly
+        gridTemplateRows: `repeat(${rowCount}, 1fr)`,
       }}
     >
-      {board.map((row, rowIndex) =>
-        row.map((cell, colIndex) => (
-          <Cell
-            key={`${rowIndex}-${colIndex}`}
-            cell={cell}
-            game={game}
-            onClick={(x, y) => revealCell(x, y)}
-            onRightClick={(x, y, value) => flagCell(x, y, value)}
-          />
-        ))
-      )}
+      <Board board={board} game={game} revealCell={revealCell} flagCell={flagCell} />
     </div>
   );
 };
