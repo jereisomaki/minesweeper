@@ -6,6 +6,8 @@ export const gameSettings = (difficulty) => {
       return { ROW_COUNT: 12, COLUMN_COUNT: 12, BOMB_COUNT: 30 };
     case "hard":
       return { ROW_COUNT: 18, COLUMN_COUNT: 18, BOMB_COUNT: 60 };
+    case "impossible":
+      return { ROW_COUNT: 10, COLUMN_COUNT: 10, BOMB_COUNT: 98 };
     default:
       break;
   }
